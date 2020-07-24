@@ -27,6 +27,10 @@ at `-O1` and above will collapse each call down down to an average of 1-4
 instructions with no branches and the variables are stripped out completely,
 using no storage.
 
+The library includes compilation tests for all parsed system registers, which have
+been all been successfully built using both `gcc` and `clang` and with the
+`-Wall -Wextra -pedantic -Werror` flags.
+
 
 ## Prerequisites
 - Python 3.8+
@@ -134,6 +138,7 @@ the value being constructed.
     #include "sysreg/sctlr_el1.h"
     void foo( void )
     {
+        union sctlr_el1 val = { .m=1, .c=1, .i=1 };
         unsafe_write_sctlr_el1(val);
     }
 
@@ -252,7 +257,7 @@ XML downloaded and extracted earlier:
 
 Run the provided `run-tests.py` script, pointing it at your chosen compiler:
 
-    python3.8 run-tests.py /path/to/aarch64-none-elf-gcc
+    python3.8 run-tests.py [--keep] /path/to/aarch64-none-elf-gcc
 
 It is assumed the compiler uses the same switches as `gcc` and `clang`, and the
 script always invokes the compiler with the following flags:
@@ -270,3 +275,7 @@ If no `-O` flag is provided, the script defaults to `-O2`.
 
 If the compiler path contains substring `clang` and no `--target` flag is provided,
 the script defaults to `--target=aarch64-none-elf`.
+
+By default the script will cleanup the generated .o object files after finishing
+the test run. Pass the `--keep` flag before the path to the compiler if you wish
+to keep these files.
