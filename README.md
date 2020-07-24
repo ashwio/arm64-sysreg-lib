@@ -11,7 +11,7 @@
     - [Unsafe write](#unsafe-write)
     - [Safe write](#safe-write)
   - [Read-modify-write](#read-modify-write)
-- [Building the library](#building-the-library)
+- [Building and testing the library](#building-and-testing-the-library)
   - [Step 1) Obtain AArch64 System Register XML](#step-1-obtain-aarch64-system-register-xml)
   - [Step 2) Build](#step-2-build)
   - [Step 3) Test](#step-3-test)
@@ -240,7 +240,16 @@ currently or previously `RES1` fields are set to `1` and all other unspecified
 fields are cleared to `0`.
 
 
-## Building the library
+## Building and testing the library
+
+NOTE: The library has already been built for you using the June 2020 release of
+the AArch64 System Register XML (SysReg_xml_v86A-2020-06). You can simply add
+`-I/path/to/arm64-sysreg-lib/include` to your compiler flags to begin using the
+library in your own projects straight away. You can also run the `run-tests.py`
+script to build the compilation tests using your chosen compiler. More detailed
+instructions for running the compilation tests can be found at the end of this
+document.
+ 
 
 ### Step 1) Obtain AArch64 System Register XML
 
