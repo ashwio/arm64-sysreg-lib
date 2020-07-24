@@ -83,25 +83,31 @@ to `0`. These values are used by the `safe_write_<reg>()` convenience macros,
 or you can use them yourself when manually constructing a value to write into
 a register using `unsafe_write_<reg>()`.
 
-Examples:
+Example:
 
-    static const union sctlr_el1 SCTLR_EL1_SAFEVAL =
+    static const union sctlr_el3 SCTLR_EL3_SAFEVAL =
     {
-        .itd = 1,
-        .sed = 1,
+        .res1_5_4 = 3,
         .eos = 1,
-        .tscxt = 1,
+        .res1_16 = 1,
+        .res1_18 = 1,
         .eis = 1,
-        .span = 1,
-        .ntlsmd = 1,
-        .lsmaoe = 1,
+        .res1_23 = 1,
+        .res1_29_28 = 3,
     };
 
-    static const union tcr_el3 TCR_EL3_SAFEVAL =
-    {
-        .res1_23 = 1,
-        .res1_31 = 1,
-    };
+Some of these fields are currently `RES1` bits, such as `.res1_5_4` for bits
+\[5:4\] and `.res1_16` for bit \[16\]. Setting these to `1` in the safe value
+ensures portability when running on future CPU implementations where those bits
+have been repurposed into new fields, as in these cases a value of `1` will give
+the old behaviour while a value of `0` will give the new behaviour, and we
+don't want to inadvertently enable the new behaviour by clearing them.
+
+This is why the `.eos` and `.eis` fields are also set to `1`; these fields were
+previosuly `RES1` bits but were repurposed into new fields in later revisions
+of the architecture. The user can choose to clear these to `0` explicitly if
+they want the new behaviour, but the library defaults to setting them to `1` in
+the safe value and, by extension, the `safe_write_<reg>()` convenience macro.
 
 
 ### Reads
