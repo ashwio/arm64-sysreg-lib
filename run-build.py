@@ -21,6 +21,7 @@ import bs4
 import os
 import shutil
 import sys
+from functools import reduce
 
 """
 Cannot directly use these escaped literals in f-string exprs, so store them in
@@ -277,7 +278,7 @@ class Register():
                 if not self.writeable:
                     if am_xml['accessor'].startswith("MSR"):
                         self.writeable = True
-        
+
         if not self.readable and not self.writeable:
             raise AArch64XML.ParseError(access_mechanisms, "no accessors")
 
@@ -434,25 +435,30 @@ if __name__ == "__main__":
                 print(e)
                 sys.exit(e.errno if hasattr(e, "errno") else 1)
 
-    def filter_filename( path:str ) -> bool:
-        if not path.startswith("AArch64"):
-            return False
-        if path.startswith("AArch64-ic-"):
-            """ ignore instruction cache maintenance. """
-            return False
-        if path.startswith("AArch64-dc-"):
-            """ ignore data cache maintenance. """
-            return False
-        if path.startswith("AArch64-tlbi-"):
-            """ ignore TLB invalidates. """
-            return False
-        if path.startswith("AArch64-at-"):
-            """ ignore address translations. """
-            return False
-        if path.startswith("AArch64-s1_") or path.startswith("AArch64-s3_"):
-            """ ignore unnamed registers. """
-            return False
-        return True
+    class FilenameFilter:
+        instructions = ["ic", "dc", "tlbi", "at"]
+        counts = {}
+
+        @classmethod
+        def check( cls, path:str ) -> bool:
+            if not path.startswith("AArch64-"):
+                return False
+            if path.startswith("AArch64-s1_") or path.startswith("AArch64-s3_"):
+                return False
+            for instr in cls.instructions:
+                if not instr in cls.counts:
+                    cls.counts[instr] = 0
+                if path.startswith(f"AArch64-{instr}-"):
+                    cls.counts[instr] += 1
+                    return False
+            return True
+
+        @classmethod
+        def report( cls ) -> str:
+            ret = f"skipped {reduce(lambda a,b: a+b, cls.counts.values())} files:"
+            for instr,count in cls.counts.items():
+                ret += f"\n - {instr} (x{count})"
+            return ret
 
     rmdir("include")
     rmdir("test")
@@ -462,7 +468,7 @@ if __name__ == "__main__":
     ok = []
     failures = []
     print("========== build start ==========")
-    for f in sorted(list(filter(filter_filename, files))):
+    for f in sorted(list(filter(FilenameFilter.check, files))):
         print(f"parsing {f}")
         try:
             r = Register(f"{sys.argv[1]}/{f}")
@@ -506,7 +512,8 @@ if __name__ == "__main__":
         print("\n".join(failures))
 
     print("========== build results ==========")
-    print(f"successfully built {len(ok)} registers out of {len(ok)+len(failures)} ({len(failures)} failed to parse)")
+    print(FilenameFilter.report())
+    print(f"successfully built {len(ok)} of the remaining {len(ok)+len(failures)} files ({len(failures)} errors)")
 
     if failures:
         print("NOTE: these error messages are expected! this tool is still in development")
@@ -514,3 +521,4 @@ if __name__ == "__main__":
         keys = sorted(AArch64XML.ParseError.registered_errors.keys())
         for k in keys:
             print(f" - {k} (x{AArch64XML.ParseError.registered_errors[k]})'")
+
