@@ -265,7 +265,7 @@ union cntpctss_el0
 {
     u64 _;
     __extension__ struct {
-        u64 Self-synchronized_physical_count_value : 64;
+        u64 Self_synchronized_physical_count_value : 64;
     };
 };
 

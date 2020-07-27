@@ -265,7 +265,7 @@ union osdtrtx_el1
 {
     u64 _;
     __extension__ struct {
-        u64 Return_DTRTX_without_side-effect : 32;
+        u64 Return_DTRTX_without_side_effect : 32;
         u64 res0_63_32 : 32;
     };
 };

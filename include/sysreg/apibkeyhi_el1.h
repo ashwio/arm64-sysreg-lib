@@ -265,7 +265,7 @@ union apibkeyhi_el1
 {
     u64 _;
     __extension__ struct {
-        u64 64_bit_value,_bits_127_64__of_the_128_bit_pointer_authentication_key_value : 64;
+        u64 bits_127_64_of_the_128_bit_pointer_authentication_key_value : 64;
     };
 };
 

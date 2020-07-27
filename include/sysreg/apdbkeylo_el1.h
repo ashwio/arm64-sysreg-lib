@@ -265,7 +265,7 @@ union apdbkeylo_el1
 {
     u64 _;
     __extension__ struct {
-        u64 64_bit_value,_bits_63_0__of_the_128_bit_pointer_authentication_key_value : 64;
+        u64 bits_63_0_of_the_128_bit_pointer_authentication_key_value : 64;
     };
 };
 
