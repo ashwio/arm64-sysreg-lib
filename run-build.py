@@ -447,6 +447,9 @@ if __name__ == "__main__":
             if not path.startswith("AArch64-"):
                 """ ignore AArch32 and external system registers """
                 return False
+            if path.startswith("AArch64-sysindex") or path.startswith("AArch64-regindex"):
+                """ ignore index files """
+                return False
             if path.startswith("AArch64-s1_") or path.startswith("AArch64-s3_"):
                 """ ignore example instructions """
                 return False
