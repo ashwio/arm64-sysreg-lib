@@ -308,17 +308,20 @@ these files.
 This library is still in development and is not yet able to parse all files
 included in the AArch64 System Register XML.
 
-Of the `485` files included in the `SysReg_xml_v86A-2020-06` release:
-- `126` are skipped as they correspond to instructions that use the system register
+Of the 485 `AArch64-*` files included in the `SysReg_xml_v86A-2020-06` release
+that actually describe system register encodings:
+- 126 are skipped as they correspond to instructions that use the system register
   encoding space (`ic`, `dc`, `tlbi`, `at`, `cfp`, `cpp`, and `dvp`)
-- `263` successfully build
-- `96` fail to parse
+- 263 successfully build
+- 96 fail to parse
 
-Of the `96` that fail to parse:
-- `43` fail due to their field layouts changing under certain conditions, such as
-  when a bit in another register is set to `1`
-- `19` fail due to being an arrayed register (`<n>`)
-- `23` fail due to having arrayed fields (`<m>`, `<n>`, or `<x>`)
-- `11` fail due to having variable length fields
+Of the 96 that fail to parse:
+- 43 fail as their fields vary, such a when a bit in another register is set to `1`
+- 19 fail due to being an arrayed register (`<n>`)
+- 23 fail due to having arrayed fields (`<m>`, `<n>`, or `<x>`)
+- 11 fail due to having variable length fields
 
-Support for these registers will be added in future updates to the library.
+Support for these registers will be added in a future release.
+
+Not counted above are external system registers such as `GICD_*` and `GICR_*`,
+support for which will also be added later.
