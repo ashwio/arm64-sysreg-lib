@@ -195,7 +195,7 @@ class Field():
         def get_res( s:str ) -> int:
             if s.startswith("RES"):
                 return int(s[-1])
-            elif s.startswith("RAZ"):
+            elif s.startswith("RAZ") or s.startswith("UNKNOWN"):
                 return 0
             elif s.startswith("RAO"):
                 return 1
@@ -210,8 +210,10 @@ class Field():
                 self.name = xml.field_name.string.lower()
                 if xml.attr_exists('reserved_type'):
                     self.res = get_res(xml['reserved_type'])
-        except (ValueError, AttributeError) as e:
-            raise AArch64XML.AttrValueError(xml, f"parsing field{' rwtype/reserved_type' if type(e) is ValueError else '_name - field has no name'}")
+        except ValueError as e:
+            raise AArch64XML.AttrValueError(xml, f"parsing field rwtype/reserved_type")
+        except AttributeError as e:
+            self.name = xml.find_all_exact("field_shortdesc", assert_only_one=True).string
 
         xml.assert_str_not_numbered(self.name, "field", spaces_ok=True)
         for c in [' ', '[', ':', ']']:
@@ -266,7 +268,8 @@ class Register():
         self.writeable = False
         access_mechanisms = xml.find_all_exact('access_mechanisms', assert_only_one=True)
         for am_xml in access_mechanisms.find_all_exact('access_mechanism'):
-            if am_xml['accessor'].endswith(self.name.upper()):
+            accessor_name = am_xml['accessor'].lower()
+            if accessor_name.endswith(self.name) or accessor_name.replace("icc_", "icv_").endswith(self.name):
                 if not self.ops:
                     for enc_xml in am_xml.find_all_exact('enc'):
                         self.ops[enc_xml['n']] = int(enc_xml['v'][2:], 2)
@@ -436,16 +439,22 @@ if __name__ == "__main__":
                 sys.exit(e.errno if hasattr(e, "errno") else 1)
 
     class FilenameFilter:
-        instructions = ["ic", "dc", "tlbi", "at"]
+        instructions = ["ic", "dc", "tlbi", "at", "cfp", "cpp", "dvp"]
         counts = {}
 
         @classmethod
         def check( cls, path:str ) -> bool:
             if not path.startswith("AArch64-"):
+                """ ignore AArch32 and external system registers """
                 return False
             if path.startswith("AArch64-s1_") or path.startswith("AArch64-s3_"):
+                """ ignore example instructions """
+                return False
+            if path.startswith("AArch64-sp_el3"):
+                """ sp_el3 cannot be accessed using MRS/MSR """
                 return False
             for instr in cls.instructions:
+                """ ignore instructions that look like system registers """
                 if not instr in cls.counts:
                     cls.counts[instr] = 0
                 if path.startswith(f"AArch64-{instr}-"):
@@ -455,7 +464,7 @@ if __name__ == "__main__":
 
         @classmethod
         def report( cls ) -> str:
-            ret = f"skipped {reduce(lambda a,b: a+b, cls.counts.values())} files:"
+            ret = f"skipped {reduce(lambda a,b: a+b, cls.counts.values())} files corresponding to instructions:"
             for instr,count in cls.counts.items():
                 ret += f"\n - {instr} (x{count})"
             return ret
