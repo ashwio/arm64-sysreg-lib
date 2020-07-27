@@ -216,8 +216,11 @@ class Field():
             self.name = xml.find_all_exact("field_shortdesc", assert_only_one=True).string
 
         xml.assert_str_not_numbered(self.name, "field", spaces_ok=True)
-        for c in [' ', '[', ':', ']']:
+        for c in [' ', '[', ':', ']', ',', '.', '-']:
             self.name = self.name.replace(c, '_')
+        while "__" in self.name:
+            self.name = self.name.replace("__", "_")
+        self.name = self.name.replace("64_bit_value_", "")
 
         if self.name == "implementation_defined":
             self.name = f"impdef_{self.msb}{f'_{self.lsb}' if self.msb > self.lsb else ''}"
