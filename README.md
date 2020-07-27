@@ -14,6 +14,7 @@
   - [Step 1) Obtain AArch64 System Register XML](#step-1-obtain-aarch64-system-register-xml)
   - [Step 2) Build](#step-2-build)
   - [Step 3) Test](#step-3-test)
+- [Known issues and limitations](#known-issues-and-limitations)
   
 
 ## Introduction
@@ -301,3 +302,23 @@ the script defaults to `--target=aarch64-none-elf`.
 By default the script will cleanup the generated `.o` object files after finishing
 the test run; pass the `--keep` flag before the compiler path if you wish to keep
 these files.
+
+## Known issues and limitations
+
+This library is still in development and is not yet able to parse all files
+included in the AArch64 System Register XML.
+
+Of the `485` files included in the `SysReg_xml_v86A-2020-06` release:
+- `126` are skipped as they correspond to instructions that use the system register
+  encoding space (`ic`, `dc`, `tlbi`, `at`, `cfp`, `cpp`, and `dvp`)
+- `263` successfully build
+- `96` fail to parse
+
+Of the `96` that fail to parse:
+- `43` fail due to their field layouts changing under certain conditions, such as
+  when a bit in another register is set to `1`
+- `19` fail due to being an arrayed register (`<n>`)
+- `23` fail due to having arrayed fields (`<m>`, `<n>`, or `<x>`)
+- `11` fail due to having variable length fields
+
+Support for these registers will be added in future updates to the library.
