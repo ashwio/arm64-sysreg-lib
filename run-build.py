@@ -327,7 +327,7 @@ static const union {self.name} {self.name.upper()}_SAFEVAL =
 static inline union {self.name} read_{self.name}( void )
 {{
     union {self.name} tmp;
-    __asm(
+    __asm volatile(
         "MRS %0, {self.encoding}"
         : "=r" (tmp._)
     );
@@ -341,7 +341,7 @@ static inline union {self.name} read_{self.name}( void )
 
 static inline void unsafe_write_{self.name}( union {self.name} val )
 {{
-    __asm(
+    __asm volatile(
         "MSR {self.encoding}, %0"
         : /**/ : "r" (val._)
     );
